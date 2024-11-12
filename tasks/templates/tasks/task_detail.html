@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block contents %}
+    <title>{{ task.name }}</title>
+    <style>
+        .draggable {
+            border: 1px solid #000;
+            padding: 10px;
+            margin: 5px;
+            cursor: move;
+            display: inline-block;
+        }
+        .dropzone {
+            border: 1px dashed #000;
+            min-height: 100px;
+            padding: 10px;
+            margin-top: 20px;
+        }
+    </style>
+    <!-- SortableJSのCDNを追加 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+
+    <h2>{{ task.name }}をサブ機能に分解してください</h2>
+    
+    <!-- 解答エリア（データベースから生成された内容を表示） -->
+    <div id="answer-box" class="dropzone">
+
+    </div>
+    
+    <!-- カード群 -->
+    <div id="card-container">
+        <h3>カード群</h3>
+        {% for subfunction in subfunctions %}
+            <div class="draggable">{{ subfunction.name }}</div>
+            {% for child in subfunction.children.all %}
+                <div class="draggable" style="margin-left: 20px;">{{ child.name }}</div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+    
+    <form method="post" action="{% url 'tasks:home' %}">
+        {% csrf_token %}
+        <button type="submit"id="submit-button">送信</button>
+    </form>
+    
+    <script>
+        // ドラッグ＆ドロップ機能の設定
+        var cardContainer = document.getElementById('card-container');
+        var answerArea = document.getElementById('answer-box');
+        
+        // カードのドラッグ＆ドロップを有効化
+        var sortableCardContainer = Sortable.create(cardContainer, {
+            group: "shared",
+            animation: 150,
+            sort: false  // 元のカードリストの順序は変更しない
+        });
+
+        var sortableAnswerArea = Sortable.create(answerArea, {
+            group: "shared",
+            animation: 150
+        });
+        
+    </script>
+
+{% endblock %}

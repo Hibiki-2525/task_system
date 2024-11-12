@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block contents %}
+
+<title>課題一覧</title>
+
+ <h1>問題一覧</h1>
+    <ul>
+        {% for task in tasks %}
+            <li><a href="{% url 'tasks:task_detail' task.id %}">{{ task.name }}</a></li>
+        {% endfor %}
+    </ul>
+
+
+
+
+{% endblock %}
