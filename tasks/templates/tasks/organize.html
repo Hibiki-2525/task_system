@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block contents %}
+{% load recursivetags%}
+<div class= "title"><h2>{{ task.name }} - サブ機能を分解してください</h2></div>
+<div class="quiz-area">
+<div class= "answer-area" >
+    <ul class="construction">
+        <li>
+            <!-- タスク名の表示 -->
+            <div class="main">{{ task.name }}</div>
+            <ul>
+                {% for sub_function in sub_functions %}
+                    <li>
+                        <!-- 親サブ機能の空欄 -->
+                        <div class="droppable" data-level="0"></div>
+                        <ul>
+                        <!-- 再帰的に子サブ機能を処理 -->
+                        {% render_droppable_structure sub_function %}
+                        </ul>
+                    </li>
+                {% endfor %}
+            </ul>
+        </li>
+    </ul>
+</div>
+<div class="card-area">
+    <h2>カード群</h2>
+        {% for sub_function in sub_functions %}
+            <div class="draggable" id="subfunction-{{ sub_function.id }}" draggable="true">
+                {{ sub_function.name }}
+            </div>
+            {% render_draggables sub_function %}
+        {% endfor %}
+</div>
+</div>
+    <form method="post" action="{% url 'tasks:bemodel' task_id=task.id%}">
+        {% csrf_token %}
+        <button type="submit"id="submit-button">送信</button>
+    </form>
+    
+
+    <script>
+        function applyDragEvents() {
+            const draggables = document.querySelectorAll('.draggable');
+            draggables.forEach(draggable => {
+                draggable.setAttribute('draggable', 'true');
+                draggable.addEventListener('dragstart', e => {
+                    e.dataTransfer.setData('text/plain', e.target.innerText);
+                    e.dataTransfer.setData('sourceId', e.target.id); // sourceIdをセット
+                });
+            });
+        }
+    
+        // 初期化
+        applyDragEvents();
+    
+        const droppables = document.querySelectorAll('.droppable');
+        droppables.forEach(droppable => {
+            droppable.addEventListener('dragover', e => {
+                e.preventDefault();
+            });
+    
+            droppable.addEventListener('drop', e => {
+                e.preventDefault();
+    
+                const sourceId = e.dataTransfer.getData('sourceId');
+                const sourceElem = document.getElementById(sourceId);
+    
+                if (!sourceElem) {
+                    console.error('Source element not found.');
+                    return;
+                }
+    
+                // すでにカードがある場合、カードを交換
+                if (droppable.children.length > 0) {
+                    const existingCard = droppable.children[0];
+                    const cardGroup = document.getElementById('card-group');
+                    cardGroup.appendChild(existingCard); // 元のカード群に既存カードを戻す
+                }
+    
+                // 移動処理
+                droppable.appendChild(sourceElem);
+                applyDragEvents(); // 新しい位置にドラッグイベントを適用
+            });
+        });
+
+       /* function validateStructure() {
+            const structure = [];
+            droppables.forEach(droppable => {
+                const children = Array.from(droppable.children).map(child => child.innerText);
+                structure.push(children);
+            });
+
+            fetch('/validate/', {
+                method: 'POST',
+                body: JSON.stringify({ user_structure: structure }),
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.correct) {
+                    alert('正解です！');
+                } else {
+                    alert('不正解です。再度試してみてください。');
+                }
+            });
+        }*/
+    </script>
+
+{% endblock %}

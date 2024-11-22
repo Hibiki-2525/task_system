@@ -1,0 +1,190 @@
+.title{
+    margin: 100px 30px 30px;
+    padding: 10px;
+    border: 2px solid #ccc;
+    min-height: 50px;
+}
+/*分解*/
+.construction{
+
+    list-style-type: none;
+    
+    }
+    
+    .construction ul {
+    
+    margin: 0;
+    
+    padding: 0;
+    
+    list-style-type: none;
+    
+    }
+    
+    .construction ul {
+    
+    position: relative;
+    
+    /* margin-top: 1rem; */
+    
+    margin-left: 20px;
+    
+    }
+    
+    .construction ul:before {
+    
+    content: "";
+    
+    display: block;
+    
+    position: absolute;
+    
+    top: 0;
+    
+    bottom: 0;
+    
+    left: 0;
+    
+    width: 0;
+    
+    border-left: 3px solid red;
+    
+    }
+    
+    .construction ul li {
+    
+    position: relative;
+    
+    margin: 0;
+    
+    padding: 7px15px;
+    
+    /* padding: 0; */
+    
+    }
+    
+    .construction ul li:before {
+    
+    content: "";
+    
+    display: block;
+    
+    position: absolute;
+    
+    top: 30px;
+    
+    left: 0;
+    
+    width: 20px;
+    
+    height: 0;
+    
+    border-top: 3px solid blue;
+    
+    }
+    
+    .construction ul li:last-child:before {
+    
+    top: 25px;
+    
+    bottom: 0;
+    
+    height: auto;
+    
+    background-color: #fff;
+    
+    }
+.main {
+    margin: 20px;
+    padding: 10px;
+    border: 2px dashed #ccc;
+    min-height: 50px;
+}
+.droppable {
+    margin: 20px;
+    padding: 10px;
+    border: 2px dashed #ccc;
+    height: 60px;
+}
+.draggable {
+    margin: 5px;
+    padding: 7px;
+    border: 1px solid #000;
+    background-color: #f0f0f0;
+    cursor: grab;
+}
+.card-area, .answer-area {
+    margin: 0px;
+    width: 45%;
+    border: 3px solid #ccc;
+    padding: 50px;
+    min-height: 500px;  /* 高さを設定してカードをドロップできるようにする */
+}
+.quiz-area {
+    margin: 20px 30px 30px;
+    padding: 0px;
+    display: flex;
+    justify-content: space-between;
+}
+#submit-button {
+    display: block;          /* ブロック要素にして配置を制御しやすく */
+    margin-top: 5px;
+    margin-left: auto;       /* 左の余白を自動にして右寄せ */
+    margin-right: 30px;         /* 右の余白をゼロにする（必要に応じて調整） */
+}
+
+/*振る舞いモデル*/
+.bemodel-area {
+    margin: 20px 30px 30px;
+    padding: 0px;
+    /*display: flex;*/
+    /*justify-content: space-between;*/
+}
+#card-container {
+    display: flex;
+    flex-direction: column; /* 縦に並べる */
+    border: 1px solid #ccc; /* 枠線を付ける */
+    padding: 16px;
+    width: 500px; /* 横幅の固定サイズ */
+    height: 500px; /* 高さの固定サイズ */
+    overflow-y: auto; /* 縦方向のスクロールを有効にする */
+}
+.card {
+    position: relative;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 8px 0;
+    display: inline-block;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #f9f9f9;
+    max-width: 300px;
+}
+
+.card-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.remove-card-button {
+    position: absolute;
+    bottom: 5px;
+    right: -30px;
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.remove-card-button:hover {
+    background-color: #e60000;
+}
+#add-card-button {
+    display: block;          /* ブロック要素にして配置を制御しやすく */
+    margin-top: 5px;
+    margin-left: 470px;       /* 左の余白を自動にして右寄せ */
+    margin-right: auto;         /* 右の余白をゼロにする（必要に応じて調整） */
+}
