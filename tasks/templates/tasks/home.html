@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block contents %}
-<h1>問題一覧</h1>
+<div class= "title"><h2>問題一覧</h2></div>
     <ul>
         {% for task in tasks %}
             <li><a href="{% url 'tasks:organize' task.id %}">{{ task.name }}</a></li>

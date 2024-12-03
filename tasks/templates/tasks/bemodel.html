@@ -1,8 +1,7 @@
 {% extends 'base.html' %}
 {% block contents %}
-<div class= "title"><h2>振る舞いモデル選択</h2></div>
+<div class= "title"><h2>「{{ current_subfunction.name }}」の振る舞いモデルを選択してください</h2></div>
 <div class= "bemodel-area">
-    <h2>{{ task.name }} のカード</h2>
     <button id="add-card-button">＋</button>
     <div id="card-container">
         <div class="card">
@@ -12,10 +11,16 @@
                     <option>{{ a_choice.name }}</option>
                     {% endfor %}
                 </select>
-                <span class="connector">は</span>
+                <span class="connector">　</span>
                 <select name="example" class="select-box">
                     {% for b_choice in b_choices %}
                     <option>{{ b_choice.name }}</option>
+                    {% endfor %}
+                </select>
+                <span class="connector">　</span>
+                <select name="example" class="select-box">
+                    {% for a_choice in a_choices %}
+                    <option>{{ a_choice.name }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -23,6 +28,10 @@
         </div>
     </div>
 </div>
+<form method="POST" action="{% url 'tasks:quiz' task.id %}">
+    {% csrf_token %}
+    <button type="submit" id="submit-button" >次へ</button>
+</form>
     <script>
     // DOMが完全にロードされてからスクリプトを実行
         document.addEventListener('DOMContentLoaded', function() {
@@ -35,19 +44,25 @@
                 newCard.classList.add('card');
                 newCard.innerHTML = `
                     <div class="card-content">
-                        <select name="example" class="select-box">
-                            {% for a_choice in a_choices %}
-                            <option>{{ a_choice.name }}</option>
-                            {% endfor %}
-                        </select>
-                        <span class="connector">は</span>
-                        <select name="example" class="select-box">
-                            {% for b_choice in b_choices %}
-                            <option>{{ b_choice.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <button class="remove-card-button">−</button>
+                <select name="example" class="select-box">
+                    {% for a_choice in a_choices %}
+                    <option>{{ a_choice.name }}</option>
+                    {% endfor %}
+                </select>
+                <span class="connector">　</span>
+                <select name="example" class="select-box">
+                    {% for b_choice in b_choices %}
+                    <option>{{ b_choice.name }}</option>
+                    {% endfor %}
+                </select>
+                <span class="connector">　</span>
+                <select name="example" class="select-box">
+                    {% for a_choice in a_choices %}
+                    <option>{{ a_choice.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button class="remove-card-button">−</button>
                 `;
                 cardContainer.appendChild(newCard);
                 addRemoveButtonListener(newCard.querySelector('.remove-card-button'));

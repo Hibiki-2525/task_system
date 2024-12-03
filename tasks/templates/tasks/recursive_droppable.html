@@ -3,7 +3,7 @@
 {% if children %}
     {% for child in children %}
         <li>
-        <div class="droppable" data-level="1"></div>
+        <div class="droppable" data-level="forloop.counter"></div>
         <ul>
         {% render_droppable_structure child %}
         </ul>

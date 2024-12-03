@@ -102,18 +102,20 @@
 }
 .droppable {
     margin: 20px;
-    padding: 10px;
+    padding: 5px;
     border: 2px dashed #ccc;
     height: 60px;
 }
 .draggable {
     margin: 5px;
-    padding: 7px;
+    padding: 5px;
     border: 1px solid #000;
     background-color: #f0f0f0;
     cursor: grab;
 }
 .card-area, .answer-area {
+    display: block;
+    position: relative;    
     margin: 0px;
     width: 45%;
     border: 3px solid #ccc;
@@ -132,6 +134,11 @@
     margin-left: auto;       /* 左の余白を自動にして右寄せ */
     margin-right: 30px;         /* 右の余白をゼロにする（必要に応じて調整） */
 }
+.correct {
+    border: 2px solid green; /* 緑色の枠線 */
+    background-color: #d4fcdc; /* 薄い緑色の背景 */
+}
+
 
 /*振る舞いモデル*/
 .bemodel-area {
@@ -158,7 +165,7 @@
     display: inline-block;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     background-color: #f9f9f9;
-    max-width: 300px;
+    max-width: 400px;
 }
 
 .card-content {
@@ -187,4 +194,15 @@
     margin-top: 5px;
     margin-left: 470px;       /* 左の余白を自動にして右寄せ */
     margin-right: auto;         /* 右の余白をゼロにする（必要に応じて調整） */
+}
+
+/*コード*/
+.answer-box {
+    border: 1px solid #98e19b;  /* 緑色の枠を太めに設定 */
+    min-height: 500px;  /* 十分な高さを設定 */
+    width: 100%;          /* ドロップエリアの最低高さ */
+    padding: 10px;
+    background-color: #fff;     /* 背景色を白に設定 */
+    border-radius: 10px;        /* 角を丸くする */
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);  /* 軽い影をつけて浮き上がる感じに */
 }
