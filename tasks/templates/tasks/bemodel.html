@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block contents %}
+<div class= "title"><h2>「{{ current_subfunction.name }}」の振る舞いモデルを選択してください</h2></div>
+<div class= "bemodel-area">
+    <button id="add-card-button">＋</button>
+    <div id="card-container">
+        <div class="card">
+            <div class="card-content">
+                <select name="example" class="select-box">
+                    {% for a_choice in a_choices %}
+                    <option>{{ a_choice.name }}</option>
+                    {% endfor %}
+                </select>
+                <span class="connector">　</span>
+                <select name="example" class="select-box">
+                    {% for b_choice in b_choices %}
+                    <option>{{ b_choice.name }}</option>
+                    {% endfor %}
+                </select>
+                <span class="connector">　</span>
+                <select name="example" class="select-box">
+                    {% for a_choice in a_choices %}
+                    <option>{{ a_choice.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button class="remove-card-button">−</button>
+        </div>
+    </div>
+</div>
+<form method="POST" action="{% url 'tasks:quiz' task.id %}">
+    {% csrf_token %}
+    <button type="submit" id="submit-button" >次へ</button>
+</form>
+    <script>
+    // DOMが完全にロードされてからスクリプトを実行
+        document.addEventListener('DOMContentLoaded', function() {
+            const cardContainer = document.getElementById('card-container');
+            const addCardButton = document.getElementById('add-card-button');
+
+            addCardButton.addEventListener('click', function() {
+                // 新しいカードを作成
+                const newCard = document.createElement('div');
+                newCard.classList.add('card');
+                newCard.innerHTML = `
+                    <div class="card-content">
+                <select name="example" class="select-box">
+                    {% for a_choice in a_choices %}
+                    <option>{{ a_choice.name }}</option>
+                    {% endfor %}
+                </select>
+                <span class="connector">　</span>
+                <select name="example" class="select-box">
+                    {% for b_choice in b_choices %}
+                    <option>{{ b_choice.name }}</option>
+                    {% endfor %}
+                </select>
+                <span class="connector">　</span>
+                <select name="example" class="select-box">
+                    {% for a_choice in a_choices %}
+                    <option>{{ a_choice.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button class="remove-card-button">−</button>
+                `;
+                cardContainer.appendChild(newCard);
+                addRemoveButtonListener(newCard.querySelector('.remove-card-button'));
+            });
+            function addRemoveButtonListener(button) {
+                button.addEventListener('click', function() {
+                    const card = button.closest('.card');
+                    card.remove(); // 親のカードを削除
+                });
+            }
+            document.querySelectorAll('.remove-card-button').forEach(addRemoveButtonListener);
+        });
+    </script>
+        
+
+
+
+
+
+{% endblock %}

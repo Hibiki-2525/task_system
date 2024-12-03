@@ -1,0 +1,12 @@
+{% load recursivetags %}
+<!-- 子サブ機能用の空欄を格納するコンテナ -->
+{% if children %}
+    {% for child in children %}
+        <li>
+        <div class="droppable" data-level="forloop.counter"></div>
+        <ul>
+        {% render_droppable_structure child %}
+        </ul>
+        </li>
+    {% endfor %}
+{% endif %}

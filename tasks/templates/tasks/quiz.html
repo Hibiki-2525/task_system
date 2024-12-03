@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block contents %}
+<div class= "title"><h2>「{{ current_subfunction.name }}」の構造を選択してください</h2></div>
+<div class="quiz-area">
+    <div class="answer-area">
+        <h3>解答欄</h3>
+        <!-- ドラッグしたカードがここに入る -->
+        <div id="answer-box" class="answer-box">
+            <!-- ここにドラッグして解答を入力 -->
+        </div>
+    </div>
+
+    <div id="card-container" class="card-area">
+        <h3>カード</h3>
+        {% for card in cards %}
+        <div class="draggable" draggable="true">{{ card.card }}</div>
+        {% endfor %}
+    </div>
+</div>
+<form id="answer-form" method="post" action="{% url 'tasks:next_bemodel' task.id %}">
+    {% csrf_token %}
+    <input type="hidden" id="answer-input" name="answer" value="">
+    <button type="submit" id="submit-button">次へ</button>
+</form>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+    // カードリストと解答エリアの要素を取得
+    var cardContainer = document.getElementById('card-container');
+    var answerArea = document.getElementById('answer-box');
+
+    // Sortable.jsを使って、ドラッグ＆ドロップを有効化
+    var sortableCardContainer = Sortable.create(cardContainer, {
+        group: "shared", // カードと解答欄を共有グループに設定
+        animation: 150,
+        sort: false // カードリストの順序は固定
+    });
+
+    var sortableAnswerArea = Sortable.create(answerArea, {
+        group: "shared", // 同じグループ名で相互ドラッグ可能に
+        animation: 150,
+        sort: true, // 解答欄内で順序を変更可能
+
+    });
+
+    
+</script>
+{% endblock %}

@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% block contents %}
+{% load recursivetags%}
+<div class= "title"><h2>「{{ task.name }}」をサブ機能に分解してください</h2></div>
+<div class="quiz-area">
+<div class= "answer-area" >
+    <ul class="construction">
+        <li>
+            <!-- タスク名の表示 -->
+            <div class="main">{{ task.name }}</div>
+            <ul>
+                {% for sub_function in sub_functions %}
+                    <li>
+                        <!-- 親サブ機能の空欄 -->
+                        <div class="droppable" data-level="0"></div>
+                        <ul>
+                        <!-- 再帰的に子サブ機能を処理 -->
+                        {% render_droppable_structure sub_function %}
+                        </ul>
+                    </li>
+                {% endfor %}
+            </ul>
+        </li>
+    </ul>
+</div>
+<div class="card-area">
+    <h2>カード群</h2>
+    <div id="card-group">
+        {% for sub_function in sub_functions %}
+            <div class="draggable" id="{{ sub_function.id }}" draggable="true">
+                {{ sub_function.name }}
+            </div>
+            {% render_draggables sub_function %}
+        {% endfor %}
+        </div>
+</div>
+</div>
+<form id="submit-form" method="post" action="">
+    {% csrf_token %}
+    <button type="submit" id="submit-button">送信</button>
+</form>
+    
+
+<script>
+    const correctStructure = JSON.parse('{{ correct_structure_json|escapejs }}');
+
+    document.getElementById('submit-button').addEventListener('click', (e) => {
+        e.preventDefault(); // フォームのデフォルト送信を防止
+        const userStructure = collectStructure();// 回答構造を収集
+        const results = startComparing(userStructure);
+        const hasIncorrect = results.some(result => !result.is_correct);
+
+        if (hasIncorrect) {
+            // 不正解の場合は再挑戦を促す
+            updateSubmitButton(true);
+        } else {
+            // 正解の場合は送信処理を実行
+            const form = document.getElementById('submit-form');
+            form.action = "{% url 'tasks:bemodel' task_id=task.id %}"; // 動的に送信先URLを設定
+            form.submit(); // フォームを送信
+        }
+    });
+
+    // 回答構造を収集する関数
+    function collectStructure() {
+        // 再帰的に構造を収集する関数
+        function traverse(element) {
+            const droppable = element.querySelector(':scope > .droppable'); // 直下のdroppableを取得
+            const card = droppable && droppable.children[0]; // カード要素を取得
+            const childrenElements = element.querySelectorAll(':scope > ul > li'); // 子要素だけを取得
+    
+            return {
+                id: card ? parseInt(card.id, 10) : null, // カードのIDを取得
+                name: card ? card.textContent.trim() : null, // カードの名前を取得
+                children: Array.from(childrenElements).map(traverse), // 再帰的に子要素を処理
+            };
+        }
+    
+        // ルート要素の直下の子要素を取得
+        const rootElement = document.querySelector('.answer-area > ul > li');
+        const rootChildren = rootElement.querySelectorAll(':scope > ul > li'); // 最上層の子ノードを取得
+    
+        // 各子ノードを traverse で処理
+        return Array.from(rootChildren).map(traverse);
+    }
+      
+    // 比較処理を行う関数
+    function compareStructures(userNode, correctNode) {
+        const results = [];
+        let parentIsIncorrect = false; // 親の正誤状態を追跡
+    
+        function compareNode(uNode, cNode) {
+            const result = {
+                id: cNode.id,
+                is_correct: false, // 初期値は false
+            };
+    
+            // 親が不正解の場合、子ノードの比較をスキップ
+            if (parentIsIncorrect) {
+                results.push(result);
+                return;
+            }
+    
+            // 正誤判定
+            result.is_correct = uNode.id === cNode.id;
+    
+            // 結果を格納
+            results.push(result);
+    
+            // 不正解だった場合、以降の子ノードの判定をスキップ
+            if (!result.is_correct) {
+                parentIsIncorrect = true; // 親の状態を不正解に設定
+                return;
+            }
+    
+            // 子ノードがある場合、再帰的に比較
+            if (cNode.children && uNode.children) {
+                const childCount = Math.min(cNode.children.length, uNode.children.length);
+                for (let i = 0; i < childCount; i++) {
+                    compareNode(uNode.children[i], cNode.children[i]);
+                }
+            }
+        }
+    
+        compareNode(userNode, correctNode);
+        return results;
+    }
+    
+    // 正誤判定関数
+    function startComparing(userStructure) {
+        const results = [];
+        for (let i = 0; i < correctStructure.length; i++) {
+            if (i >= userStructure.length) break;
+            const userNode = userStructure[i] || {};
+            const correctNode = correctStructure[i];
+            const nodeResults = compareStructures(userNode, correctNode);
+            results.push(...nodeResults);
+        }
+        updateUI(results); // 結果に基づいてUIを更新
+        return results;
+    }
+    
+
+    // UIを更新する関数
+    function updateUI(results) {
+        results.forEach(result => {
+            const cardElement = document.getElementById(result.id);
+            if (!cardElement) return;
+
+            if (result.is_correct) {
+                cardElement.classList.add('correct'); // 正解の場合
+                cardElement.classList.remove('incorrect');
+            } else {
+                cardElement.classList.add('incorrect'); // 不正解の場合
+                cardElement.classList.remove('correct');
+            }
+        });
+    }
+
+    // 送信ボタンを動的に切り替える
+    function updateSubmitButton(hasIncorrect) {
+        const submitButton = document.getElementById('submit-button');
+
+        if (hasIncorrect) {
+            submitButton.disabled = false;
+            submitButton.textContent = '再送信';
+            submitButton.style.backgroundColor = '#f44336'; // 赤色
+        } else {
+            submitButton.disabled = false;
+            submitButton.textContent = '送信';
+            submitButton.style.backgroundColor = ''; // デフォルト色
+        }
+    }
+
+    function applyDragEvents() {
+        const draggables = document.querySelectorAll('.draggable');
+            draggables.forEach(draggable => {
+            draggable.setAttribute('draggable', 'true');
+            draggable.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('text/plain', e.target.innerText);
+                e.dataTransfer.setData('sourceId', e.target.id); // sourceIdをセット
+            });
+        });
+    }
+    
+    // 初期化
+    applyDragEvents();
+    
+    const droppables = document.querySelectorAll('.droppable');
+    droppables.forEach(droppable => {
+        droppable.addEventListener('dragover', e => {
+            e.preventDefault();
+        });
+    
+        droppable.addEventListener('drop', e => {
+            e.preventDefault();
+    
+            const sourceId = e.dataTransfer.getData('sourceId');
+            const sourceElem = document.getElementById(sourceId);
+    
+            if (!sourceElem) {
+                console.error('Source element not found.');
+                return;
+            }
+    
+            // すでにカードがある場合、カードを交換
+            if (droppable.children.length > 0) {
+                const existingCard = droppable.children[0];
+                const cardGroup = document.getElementById('card-group');
+                cardGroup.appendChild(existingCard); // 元のカード群に既存カードを戻す
+            }
+    
+            // 移動処理
+            droppable.appendChild(sourceElem);
+            applyDragEvents(); // 新しい位置にドラッグイベントを適用
+        });
+    });
+    </script>
+
+{% endblock %}

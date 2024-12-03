@@ -1,0 +1,7 @@
+{% load recursivetags %}
+{% if children %}
+    {% for child in sub_function.children.all %}
+    <div class="draggable" id="{{ child.id }}" draggable="true">{{ child.name }}</div>
+        {% render_draggables child %}
+    {% endfor %}
+{% endif %}

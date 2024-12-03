@@ -24,15 +24,6 @@
             <a class="navbar-brand mr-md-2" href={% url 'tasks:home' %}>
               問題一覧
             </a>
-              <!-- ↓↓レイアウトを調整する為のダミー↓↓ -->
-              <ul class="navbar-nav mr-auto">
-                <li class="nav-item"><a class="nav-link" href="#">   </a></li>
-                <li class="nav-item"><a class="nav-link" href="#">   </a></li>
-              </ul>
-              <!-- ↑↑ダミーここまで↑↑ -->                            
-
-
-            </div>
           </nav>
         </div>
       </div>
@@ -40,70 +31,10 @@
 
 
     <!-- 「サイドバー」と「コンテンツ本体部分」 -->
-    <div id="content" class="container-fluid">
-      <div class="row flex-xl-nowrap">
-
-        <!-- ↓↓サイドバー↓↓ -->
-        <!-- <div id="sidemenu" class="col-2 d-none d-md-block bg-light sidebar align-self-start">
-          <div class="sidebar-sticky">
-            <ul class="nav flex-column">
-
-              <li class="nav-item">
-                <nav class="navbar navbar-light bg-light">
-                  <a class="navbar-brand" href="/#">
-                    <span data-feather=""></span>Topページ 
-                  </a>
-                </nav>
-              </li>
-              <li class="nav-item">
-                <nav class="navbar navbar-light bg-light">
-                  <a class='navbar-brand' href='/#'>
-                    <span data-feather=""></span>サイドバー１
-                  </a>
-                </nav>
-              </li>
-              <li class="nav-item">
-                <nav class="navbar navbar-light bg-light">
-                  <a class='navbar-brand' href='/#'>
-                    <span data-feather=""></span>サイドバー２
-                  </a>
-                </nav>
-              </li>         
-              <li class="nav-item">
-                <nav class="navbar navbar-light bg-light">
-                  <a class='navbar-brand' href='/#'>
-                    <span data-feather=""></span>サイドバー３
-                  </a>
-                </nav>
-              </li>         
-              <li class="nav-item">
-                <nav class="navbar navbar-light bg-light">
-                  <a class='navbar-brand' href='/#'>
-                    <span data-feather=""></span>サイドバー４
-                  </a>
-                </nav>
-              </li>         
-              <li class="nav-item">
-                <nav class="navbar navbar-light bg-light">
-                  <a class='navbar-brand' href='/#'>
-                    <span data-feather=""></span>サイドバー５
-                  </a>
-                </nav>
-              </li>         
-            </ul>
-          </div>
-        </div id="sidemenu">-->
-        <!-- ↑↑サイドバーここまで↑↑ -->
-
-        <!-- ↓↓コンテンツ本体↓↓ -->
-        <div class="col-10">
-          {% block contents %}
-          {% endblock %}
-        </div>
-        <!-- ↑↑コンテンツ本体ここまで↑↑ -->
-      </div>
-    </div>
-    </div>
+  
+    {% block contents %}
+    {% endblock %}
+       
   </body>
 </html>
 
