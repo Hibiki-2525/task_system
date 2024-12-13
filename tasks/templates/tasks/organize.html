@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block contents %}
 {% load recursivetags%}
+{% load random_tags%}
 <div class= "title"><h2>「{{ task.name }}」をサブ機能に分解してください</h2></div>
 <div class="quiz-area">
 <div class= "answer-area" >
@@ -25,14 +26,16 @@
 </div>
 <div class="card-area">
     <h2>カード群</h2>
-    <div id="card-group">
+    <div id="card-group" class="random_box">
         {% for sub_function in sub_functions %}
+        <div class="random_item">
             <div class="draggable" id="{{ sub_function.id }}" draggable="true">
                 {{ sub_function.name }}
             </div>
+        </div>
             {% render_draggables sub_function %}
         {% endfor %}
-        </div>
+    </div>
 </div>
 </div>
 <form id="submit-form" method="post" action="">
@@ -42,6 +45,7 @@
     
 
 <script>
+    shuffleElements();
     const correctStructure = JSON.parse('{{ correct_structure_json|escapejs }}');
 
     document.getElementById('submit-button').addEventListener('click', (e) => {
@@ -215,6 +219,34 @@
             applyDragEvents(); // 新しい位置にドラッグイベントを適用
         });
     });
+    function shuffleElements() {
+        let randomBox = document.querySelectorAll('.random_box');
+        // randomBoxがnullまたはundefinedであるかチェック
+        if (!randomBox || randomBox === 0) {
+          return; // 要素が見つからない場合、関数を終了
+        }
+        for (let i = 0; i < randomBox.length; i++) {
+          let elements = randomBox[i].querySelectorAll('.random_item');
+          // elementsがnullまたはundefinedであるかチェック
+          if (!elements || elements.length === 0) {
+            return; // 要素が見つからない場合、関数を終了
+          }
+          let elementsArray = Array.from(elements);
+          // Fisher-Yatesで配列をランダムに並び替え
+          for (let j = elementsArray.length - 1; j > 0; j--) {
+            let randomIndex = Math.floor(Math.random() * (j + 1));
+            [elementsArray[j], elementsArray[randomIndex]] = [elementsArray[randomIndex], elementsArray[j]];
+          }
+          // randomBoxをクリア
+          while (randomBox[i].firstChild) {
+            randomBox[i].removeChild(randomBox[i].firstChild);
+          }
+          // ランダムに並び替えた要素を再配置
+          elementsArray.forEach(function(element) {
+            randomBox[i].appendChild(element);
+          });
+        }
+      }  
     </script>
 
 {% endblock %}

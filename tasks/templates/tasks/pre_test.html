@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block contents %}
+<div class= "title"><h2>「{{ test.name }}」の構造を選択してください</h2></div>
+<div class="quiz-area">
+    <div class="answer-area">
+        <h3>解答欄</h3>
+        <!-- ドラッグしたカードがここに入る -->
+        <div id="answer-box" class="answer-box">
+            <!-- ここにドラッグして解答を入力 -->
+        </div>
+    </div>
+
+    <div id="card-container" class="card-area">
+        <h3>カード</h3>
+        {% for card in cards %}
+        <div class="draggable" draggable="true">{{ card.testcard }}</div>
+        {% endfor %}
+    </div>
+</div>
+<form id="answer-form" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="answers" id="answers-input">
+    <button type="submit" id="submit-button">次へ</button>
+</form>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // カードリストと解答エリアの要素を取得
+    var cardContainer = document.getElementById('card-container');
+    var answerBox= document.getElementById('answer-box');
+    const answerInput = document.getElementById('answers-input')
+
+    // Sortable.jsを使って、ドラッグ＆ドロップを有効化
+    var sortableCardContainer = Sortable.create(cardContainer, {
+        group: "shared", // カードと解答欄を共有グループに設定
+        animation: 150,
+        sort: false // カードリストの順序は固定
+    });
+
+    var sortableAnswerArea = Sortable.create(answerBox, {
+        group: "shared", // 同じグループ名で相互ドラッグ可能に
+        animation: 150,
+        sort: true, // 解答欄内で順序を変更可能
+
+    });
+    document.getElementById('submit-button').addEventListener('click', function(event) {
+        event.preventDefault();  // フォームの送信を防ぐ
+
+        var answer = [];
+        var answerCards = answerBox.querySelectorAll('.draggable');  // 解答エリアのカードを取得
+        
+        // 解答エリア内のカードテキストをリストに追加
+        answerCards.forEach(function(card) {
+            answer.push(card.textContent.trim()); // カードのテキストを取得
+        });
+        
+        // 取得した解答をJSON形式に変換してhiddenフィールドにセット
+        answerInput.value = JSON.stringify(answer);
+
+        // フォームを送信
+        document.getElementById('answer-form').submit();
+    });
+
+});    
+</script>
+{% endblock %}

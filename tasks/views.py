@@ -2,14 +2,18 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.core.serializers.json import DjangoJSONEncoder
 import json
 import random
-from .models import Task, SubFunction, Answer_bemodel, Answer_code, BehaviorModel_A, BehaviorModel_B, Card, SubFunctionVarValue, task_Answer_bemodel, task_Answer_code, TaskVarValue
+from .models import Task, SubFunction, Answer_bemodel, Answer_code, BehaviorModel_A, BehaviorModel_B, Card, SubFunctionVarValue, task_Answer_bemodel, task_Answer_code, TaskVarValue, Test, TestCard, PreTestAnswer, ProTestAnswer
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.messages import get_messages
+from django.http import HttpResponseRedirect
 
 def home(request):
     tasks = Task.objects.all()
-    return render(request, 'tasks/home.html', {'tasks': tasks})
+    context = {
+        'tasks': tasks,
+    }
+    return render(request, 'tasks/home.html',context)
 
 def organize(request, task_id):
     request.session.clear()
@@ -109,7 +113,6 @@ def bemodel(request, task_id):
             return redirect(request.path)  # 現在のページを再読み込み
         # 計算を実行
         outputs = calculate_outputs(bemodel_answers, inputs)
-        print("outputs", outputs)
         # 正解の回答を取得し、タプルとしてまとめる
         correct_answers = Answer_bemodel.objects.filter(sub_function=current_subfunction).values_list('behavior_model_a_1', 'behavior_model_a_2','behavior_model_b')
         correct_answer_tuples = [tuple(correct_answer) for correct_answer in correct_answers]
@@ -194,8 +197,7 @@ def get_subfunction_order(task_id):
     from collections import deque
     task = get_object_or_404(Task, id=task_id)
     # タスクとその関連するSubFunctionを取得
-    root_task = Task.objects.get(id=task_id)
-    all_subfunctions = SubFunction.objects.filter(task=root_task)
+    all_subfunctions = SubFunction.objects.filter(task=task)
 
     # 子ノードから順に処理するための順番を格納するリスト
     sorted_tasks = []
@@ -203,7 +205,10 @@ def get_subfunction_order(task_id):
     # 再帰的に子ノードを探索する関数
     def traverse(node):
         for child in node.children.all():
-            traverse(child)  # 再帰的に子を探索
+            traverse(child)  # 
+        if node.is_special:
+            return
+        
         sorted_tasks.append(node)
 
     # ルートレベルのSubFunctionから探索を開始
@@ -263,7 +268,6 @@ def finalbe(request, task_id):
             return redirect(request.path)  # 現在のページを再読み込み
         # 計算を実行
         outputs = calculate_outputs(bemodel_answers, inputs)
-        print("outputs", outputs)
         # 正解の回答を取得し、タプルとしてまとめる
         correct_answers = task_Answer_bemodel.objects.filter(task=task).values_list('behavior_model_a_1', 'behavior_model_a_2','behavior_model_b')
         correct_answer_tuples = [tuple(correct_answer) for correct_answer in correct_answers]
@@ -298,7 +302,8 @@ def finalquiz(request, task_id):
     task = get_object_or_404(Task, id=task_id)
 
     # クイズのカードデータを取得
-    cards = task.Card.filter(task=task)  # カードを取得
+    cards = list(Card.objects.filter(task=task))  # カードを取得
+    random.shuffle(cards)
     # 正解のデータ（解答順）を取得
     correct_answer = task_Answer_code.objects.get(task=task)
     correct_answer_list = correct_answer.get_correct_answer_list()
@@ -332,3 +337,99 @@ def calculate_outputs(bemodel_answers, inputs):
             outputs[var1] = min(outputs[var1], outputs[var2])
 
     return outputs
+
+def pre_test(request, test_id):
+    test = get_object_or_404(Test, id=test_id)
+    user_name = request.session.get('user_name', '匿名ユーザー')
+    next_test = Test.objects.filter(id__gt=test_id).order_by('id').first()
+    # クイズのカードデータを取得
+    cards = list(TestCard.objects.filter(test=test))  # カードを取得
+    random.shuffle(cards)
+    # フォームが送信されると次のページに遷移
+    if request.method == "POST":
+        print("送信されたデータ:", request.POST)
+        answers = request.POST.get('answers', '')
+        print("回答内容:", answers)
+        PreTestAnswer.objects.create(
+            user_name=user_name,  # セッションから取得
+            test=test,
+            answers=answers
+        )
+        if next_test:  # 次のテストがある場合はそのテストへ遷移
+            return redirect('tasks:pre_test', test_id=next_test.id)
+        else:  # 次のテストがない場合はホームページへ遷移
+            return redirect('tasks:home')
+
+    context = {
+        'test': test,
+        'cards': cards,
+        }
+    return render(request, 'tasks/pre_test.html', context)
+
+def final_test(request, test_id):
+    test = get_object_or_404(Test, id=test_id)
+    user_name = request.session.get('user_name', '匿名ユーザー')
+    next_test = Test.objects.filter(id__gt=test_id).order_by('id').first()
+    # クイズのカードデータを取得
+    cards = list(TestCard.objects.filter(test=test))  # カードを取得
+    random.shuffle(cards)
+    # フォームが送信されると次のページに遷移
+    if request.method == "POST":
+        print("送信されたデータ:", request.POST)
+        answers = request.POST.get('answers', '')
+        print("回答内容:", answers)
+        ProTestAnswer.objects.create(
+            user_name=user_name,  # セッションから取得
+            test=test,
+            answers=answers
+        )
+        if next_test:  # 次のテストがある場合はそのテストへ遷移
+            return redirect('tasks:final_test', test_id=next_test.id)
+        else:  # 次のテストがない場合はホームページへ遷移
+            return redirect('tasks:home')
+
+    context = {
+        'test': test,
+        'cards': cards,
+        }
+    return render(request, 'tasks/final_test.html', context)
+
+def pre_name(request):
+    request.session.clear()
+    first_test = Test.objects.order_by('id').first()
+
+    if request.method == "POST":
+        name = request.POST.get('name')
+        request.session['user_name'] = name  # セッションに名前を保存
+        return redirect('tasks:pre_test', test_id=first_test.id)  # 最初のテストへリダイレクト
+    return render(request, 'tasks/pre_name.html')
+
+def final_name(request):
+    request.session.clear()
+    first_test = Test.objects.order_by('id').first()
+
+    if request.method == "POST":
+        name = request.POST.get('name')
+        request.session['user_name'] = name  # セッションに名前を保存
+        return redirect('tasks:final_test', test_id=first_test.id) # 最初のテストへリダイレクト
+    return render(request, 'tasks/final_name.html')
+
+def learning_view(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+
+    # クイズのカードデータを取得
+    cards = list(Card.objects.filter(task=task))  # カードを取得
+    random.shuffle(cards)
+    # 正解のデータ（解答順）を取得
+    correct_answer = task_Answer_code.objects.get(task=task)
+    correct_answer_list = correct_answer.get_correct_answer_list()
+    # フォームが送信されると次のページに遷移
+    if request.method == "POST":
+        return redirect('tasks:home')
+
+    context = {
+        'task': task,
+        'cards': cards,
+        'correct_answer_list': correct_answer_list, 
+        }
+    return render(request, 'tasks/learning.html', context)

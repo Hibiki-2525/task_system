@@ -2,12 +2,58 @@
 {% block contents %}
 <div class= "title"><h2>モードを選択してください</h2></div>
     <ul>
+        <li><a href="{% url 'tasks:pre_name' %}">事前テストを開始</a></li>
+
+        <li><a href="{% url 'tasks:final_name' %}">事後テストを開始</a></li>
+    
         {% for task in tasks %}
-            <li><a href="{% url 'tasks:organize' task.id %}">　学習を始める </a></li>
+            <li><a href="{% url 'tasks:organize' task.id %}"> 学習を始める </a></li>
+        {% endfor %}
+
+        {% for task in tasks %}
+            <li><a href="{% url 'tasks:learning' task.id %}"> コードエディター </a></li>
         {% endfor %}
     </ul>
 
+<style>
+    /* リンクのリスト全体のスタイル */
+    ul {
+        list-style: none; /* デフォルトのリストマーカーを削除 */
+        padding: 0; /* パディングをリセット */
+        margin: 0; /* マージンをリセット */
+        display: flex; /* フレックスボックスを有効化 */
+        flex-direction: column; /* 縦方向に並べる */
+        gap: 50px; /* 各リンク間のスペースを広めに設定 */
+        align-items: center; /* 中央揃え */
+    }
 
+    /* 各リンクのスタイル */
+    ul li a {
+        display: block; /* リンク全体をクリック可能に */
+        padding: 15px 25px; /* 内側の余白を設定 */
+        text-align: center; /* テキストを中央揃え */
+        text-decoration: none; /* 下線を削除 */
+        color: white; /* テキストの色 */
+        background-color: #007BFF; /* 背景色 */
+        border-radius: 8px; /* 角を丸める */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 影をつけて立体感 */
+        transition: background-color 0.3s, transform 0.2s; /* ホバー時のアニメーション */
+        width: 250px; /* ボタン幅を適度に広げる（親要素幅の80%） */
+        max-width: 400px; /* 最大幅を設定して横に広がりすぎないように */
+    }
 
+    /* ホバー時のスタイル */
+    ul li a:hover {
+        background-color: #0056b3; /* ホバー時の背景色 */
+        transform: translateY(-2px); /* 少し浮いているように見せる */
+        box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2); /* ホバー時の影を強調 */
+    }
 
+    /* フォーカス時のスタイル */
+    ul li a:focus {
+        outline: 2px solid #FFD700; /* フォーカス時の枠線 */
+        outline-offset: 4px;
+    }
+
+</style>
 {% endblock %}
