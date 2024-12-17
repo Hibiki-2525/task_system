@@ -1,9 +1,7 @@
 {% extends 'base.html' %}
 {% block contents %}
-<div class= "title">
-    <h2>「{{ current_subfunction.name }}」の構造を選択してください</h2>
-    補足：{{ current_subfunction.hosoku }}
-</div>
+<!-- learning -->
+<div class= "title"><h2>「{{ task.name }}」を満たすコードを選択してください</h2></div>
 <div class="quiz-area">
     <div class="answer-area">
         <h3>解答欄</h3>
@@ -13,25 +11,19 @@
         </div>
     </div>
     <div class="card-area">
-        <div class="behavior-model">
-            <h3>振舞いモデル</h3>
-            {% for bemodel in bemodel_list %}
-            <p>{{ bemodel.0 }}の出力値は{{ bemodel.1 }}の入力値と{{ bemodel.2 }}</p>
-            {% endfor %}
-        </div>
-        <div id="card-container">
             <h3>カード</h3>
-            {% for card in cards %}
-            <div class="draggable" draggable="true">{{ card.card }}</div>
-            {% endfor %}
-        </div>
+            <id="card-container">
+                {% for card in cards %}
+                <div class="draggable" draggable="true">{{ card.card }}</div>
+                {% endfor %}
+            </div>
     </div> 
 </div>
 <form id="answer-form" method="post">
     {% csrf_token %}
     <button type="submit" id="submit-button">送信</button>
 </form>
-
+<!-- learning -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
     // カードリストと解答エリアの要素を取得
@@ -119,8 +111,11 @@
             if (!card) return; // 不足分はスキップ
     
             if (result.is_correct) {
+                card.classList.remove('incorrect');
+                card.classList.add('correct'); // 正解のカードには'correct'クラスを追加
             } else {
-                answerArea.classList.add('missing-answer') // 不正解のカードには'nocorrect'クラスを追加
+                card.classList.remove('correct');
+                card.classList.add('incorrect'); // 不正解のカードには'nocorrect'クラスを追加
             }
         });
     }

@@ -2,8 +2,8 @@
 {% block contents %}
 {% load outputs_filters%}
 <div class="title">
-    <h2>「{{ current_subfunction.name }}」の振る舞いモデルを選択してください</h2>
-    補足：{{ current_subfunction.hosoku }}
+    <h2>「{{ task.name }}」の振る舞いモデルを選択してください</h2>
+    補足：{{ task.hosoku }}
 </div>
 <div class="bemodel-area">
     <form method="POST">

@@ -1,5 +1,5 @@
 .title{
-    margin: 100px 30px 30px;
+    margin: 70px 30px 30px;
     padding: 10px;
     border: 2px solid #ccc;
     min-height: 50px;
@@ -117,13 +117,14 @@
     display: block;
     position: relative;    
     margin: 0px;
-    width: 45%;
+    width: 47%;
     border: 3px solid #ccc;
     padding: 50px;
     min-height: 500px;  /* 高さを設定してカードをドロップできるようにする */
+    justify-content: space-between;
 }
 .quiz-area {
-    margin: 20px 30px 30px;
+    margin: 20px 50px 30px;
     padding: 0px;
     display: flex;
     justify-content: space-between;
@@ -142,17 +143,16 @@
 
 /*振る舞いモデル*/
 .bemodel-area {
-    margin: 20px 30px 30px;
+    margin: 20px 50px 30px;
     padding: 0px;
-    /*display: flex;*/
-    /*justify-content: space-between;*/
+    display: flex;
+    justify-content: space-between;
 }
 #card-container {
     display: flex;
     flex-direction: column; /* 縦に並べる */
-    border: 1px solid #ccc; /* 枠線を付ける */
-    padding: 16px;
-    width: 500px; /* 横幅の固定サイズ */
+    padding: 10px;
+    width: 550px; /* 横幅の固定サイズ */
     height: 500px; /* 高さの固定サイズ */
     overflow-y: auto; /* 縦方向のスクロールを有効にする */
 }
@@ -165,7 +165,7 @@
     display: inline-block;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     background-color: #f9f9f9;
-    max-width: 400px;
+    max-width: 450px;
 }
 
 .card-content {
@@ -195,6 +195,36 @@
     margin-left: 470px;       /* 左の余白を自動にして右寄せ */
     margin-right: auto;         /* 右の余白をゼロにする（必要に応じて調整） */
 }
+.task-details {
+    width: 100%; /* 残りのスペースを占める */
+    max-width: 600px; /* 最大幅を設定 */
+    border: 1px solid #ddd; /* 枠線を付ける */
+    padding: 10px;
+    background-color: #f9f9f9; /* 背景色を設定 */
+}
+.behavior-table {
+    border-collapse: collapse;
+    width: 75%;
+    margin-left:  10px; /* 右側に余白を作る */
+}
+
+.behavior-table th, .behavior-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+}
+
+.behavior-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+.behavior-table td {
+    background-color: #fff;
+}
+.answer-summary{
+    margin: 30px 10px 30px;
+}
 
 /*コード*/
 .answer-box {
@@ -205,4 +235,25 @@
     background-color: #fff;     /* 背景色を白に設定 */
     border-radius: 10px;        /* 角を丸くする */
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);  /* 軽い影をつけて浮き上がる感じに */
+}
+.nocorrect {
+    border: 2px solid red; /* 赤色の枠線 */
+    background-color: #fcdcdc; /* 薄い赤色の背景 */
+}
+.behavior-model {
+    margin: 10px 0px 30px;
+    width: 550px; /* 横幅の固定サイズ */
+    height: 100px; /* 高さの固定サイズ */
+    border: 1px solid #ccc; /* 枠線を付ける */
+    padding: 10px;
+    background-color: #c5f3f8;     /* 背景色を白に設定 */
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);  /* 軽い影をつけて浮き上がる感じに */
+    border-radius: 10px;        /* 角を丸くする */
+}
+
+/* 解答不足の時に枠線を赤く表示 */
+.missing-answer {
+    border: 2px dashed #f44336;
+    padding: 10px;
+    background-color: #ffe6e6;
 }

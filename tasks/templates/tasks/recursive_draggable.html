@@ -1,7 +1,10 @@
 {% load recursivetags %}
+{% load random_tags %}
 {% if children %}
-    {% for child in sub_function.children.all %}
-    <div class="draggable" id="{{ child.id }}" draggable="true">{{ child.name }}</div>
+    {% for child in children %}
+    <div class="random_item">
+    <div class="draggable" id="{{ child.id }}" draggable="true">{{ child.name }}
+    </div></div>
         {% render_draggables child %}
     {% endfor %}
 {% endif %}

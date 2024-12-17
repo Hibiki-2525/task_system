@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block contents %}
+<div class= "title"><h2>名前を入力してください</h2></div>
+<form method="post" action="{% url 'tasks:final_name' %}">
+    {% csrf_token %}
+    <label for="name">名前:</label>
+    <input type="text" id="name" name="name" required>
+    <button type="submit">開始</button>
+</form>
+{% endblock %}
