@@ -2,7 +2,7 @@ from django.db import models
 
 class Task(models.Model):
     name = models.CharField(max_length=255)
-    hosoku = models.CharField(max_length=255)
+    hosoku = models.TextField()
 
     def __str__(self):
         return self.name
@@ -24,7 +24,7 @@ class BehaviorModel_B(models.Model):
 class SubFunction(models.Model):
     task = models.ForeignKey(Task, related_name='subfunctions', on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-    hosoku = models.CharField(max_length=255)
+    hosoku = models.TextField()
     parent = models.ForeignKey('self', null=True, blank=True, related_name='children', on_delete=models.CASCADE)
     is_special = models.BooleanField(default=False)  # 特別なサブ関数かどうかを示すフィールド
     
@@ -34,7 +34,7 @@ class SubFunction(models.Model):
 class SubFunctionVarValue(models.Model):
     subfunction = models.ForeignKey(SubFunction, on_delete=models.CASCADE, related_name='var_values')
     var = models.ForeignKey(BehaviorModel_A, on_delete=models.CASCADE)
-    value = models.FloatField()  # 必要に応じてデータ型を変更
+    value = models.IntegerField()  # 必要に応じてデータ型を変更
 
     def __str__(self):
         return f"{self.var.name}: {self.value}"
@@ -42,13 +42,13 @@ class SubFunctionVarValue(models.Model):
 
 class Answer_bemodel(models.Model):
     sub_function = models.ForeignKey(SubFunction, related_name='answer_bemodels', on_delete=models.CASCADE)
-    behavior_model_a_1 = models.ForeignKey(BehaviorModel_A, related_name='first_part', on_delete=models.CASCADE,default=1 )
-    behavior_model_a_2 = models.ForeignKey(BehaviorModel_A, related_name='middle_part', on_delete=models.CASCADE,default=1 )
-    behavior_model_b = models.ForeignKey(BehaviorModel_B, related_name='last_part', on_delete=models.CASCADE,default=1 )
+    behavior_model_a_1 = models.ForeignKey(SubFunctionVarValue, related_name='var1', on_delete=models.CASCADE,default=1 )
+    behavior_model_a_2 = models.ForeignKey(SubFunctionVarValue, related_name='var2', on_delete=models.CASCADE,default=1 )
+    behavior_model_b = models.ForeignKey(BehaviorModel_B, related_name='relate', on_delete=models.CASCADE,default=1 )
 
 
     def __str__(self):
-        return f"{self.behavior_model_a_1.name} {self.behavior_model_b.name} {self.behavior_model_a_2.name}"
+        return f"{self.behavior_model_a_1.var.name} {self.behavior_model_a_2.var.name} {self.behavior_model_b.name}"
 
 class Card(models.Model):
     task = models.ForeignKey(Task, related_name='Card', on_delete=models.CASCADE)
@@ -69,7 +69,7 @@ class Answer_code(models.Model):
 class TaskVarValue(models.Model):
     task = models.ForeignKey(Task, related_name='TaskVarValue', on_delete=models.CASCADE)
     var = models.ForeignKey(BehaviorModel_A, on_delete=models.CASCADE)
-    value = models.FloatField()  # 必要に応じてデータ型を変更
+    value = models.IntegerField()  # 必要に応じてデータ型を変更
 
     def __str__(self):
         return f"{self.var.name}: {self.value}"
@@ -77,13 +77,12 @@ class TaskVarValue(models.Model):
 
 class task_Answer_bemodel(models.Model):
     task = models.ForeignKey(Task, related_name='task_Answer_bemodel', on_delete=models.CASCADE)
-    behavior_model_a_1 = models.ForeignKey(BehaviorModel_A, related_name='first', on_delete=models.CASCADE,default=1 )
-    behavior_model_a_2 = models.ForeignKey(BehaviorModel_A, related_name='middle', on_delete=models.CASCADE,default=1 )
-    behavior_model_b = models.ForeignKey(BehaviorModel_B, related_name='last', on_delete=models.CASCADE,default=1 )
+    behavior_model_a_1 = models.ForeignKey(TaskVarValue, related_name='task_var1', on_delete=models.CASCADE,default=1 )
+    relation = models.CharField(max_length=255)
 
 
     def __str__(self):
-        return f"{self.behavior_model_a_1.name} {self.behavior_model_b.name} {self.behavior_model_a_2.name}"
+        return f"{self.behavior_model_a_1.var.name} {self.relation}"
     
 class task_Answer_code(models.Model):  
     task = models.ForeignKey(Task, related_name='task_Answer_code', on_delete=models.CASCADE)

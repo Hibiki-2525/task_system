@@ -2,17 +2,21 @@
 {% block contents %}
 <div class= "title"><h2>モードを選択してください</h2></div>
     <ul>
+        <h3>事前テスト</h3>
         <li><a href="{% url 'tasks:pre_name' %}">事前テストを開始</a></li>
 
+        <h3>事後テスト</h3>
         <li><a href="{% url 'tasks:final_name' %}">事後テストを開始</a></li>
-    
-        {% for task in tasks %}
-            <li><a href="{% url 'tasks:organize' task.id %}"> 学習を始める </a></li>
-        {% endfor %}
+        
+        <h3>学習</h3>
+        {%for task in tasks%}
+        <li><a href="{% url 'tasks:organize' task.id %}"> 課題{{task.id}}の学習を始める </a></li>
+        {%endfor%}
 
-        {% for task in tasks %}
-            <li><a href="{% url 'tasks:learning' task.id %}"> コードエディター </a></li>
-        {% endfor %}
+        <h3>コードエディター</h3>
+        {%for task in tasks%}
+        <li><a href="{% url 'tasks:learning' task.id %}"> 課題{{task.id}}のコードエディター </a></li>
+        {%endfor%}
     </ul>
 
 <style>
@@ -20,11 +24,10 @@
     ul {
         list-style: none; /* デフォルトのリストマーカーを削除 */
         padding: 0; /* パディングをリセット */
-        margin: 0; /* マージンをリセット */
+        margin: 0 20px 0; /* マージンをリセット */
         display: flex; /* フレックスボックスを有効化 */
         flex-direction: column; /* 縦方向に並べる */
-        gap: 50px; /* 各リンク間のスペースを広めに設定 */
-        align-items: center; /* 中央揃え */
+        align-items: left; /* 中央揃え */
     }
 
     /* 各リンクのスタイル */
@@ -53,6 +56,15 @@
     ul li a:focus {
         outline: 2px solid #FFD700; /* フォーカス時の枠線 */
         outline-offset: 4px;
+    }
+
+    h3 {
+        margin-bottom: 0px; /* h3の下の余白をゼロに */
+        margin-top: 10px;
+    }
+    li {
+        margin-top: 10px; /* li間の余白を調整 */
+        margin-bottom: 30px;
     }
 
 </style>

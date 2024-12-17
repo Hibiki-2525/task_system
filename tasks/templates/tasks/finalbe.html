@@ -3,7 +3,7 @@
 {% load outputs_filters%}
 <div class="title">
     <h2>「{{ task.name }}」の振る舞いモデルを選択してください</h2>
-    補足：{{ task.hosoku }}
+    <div class="subtitle">補足：<br>{{ current_subfunction.hosoku }}</div>
 </div>
 <div class="bemodel-area">
     <form method="POST">
@@ -15,16 +15,15 @@
                 <div class="card-content">
                     <select name="bemodel_answers[]" class="select-box">
                         {% for a_choice in a_choices %}
-                            <option value="{{ a_choice.id }}">{{ a_choice.name }}</option>
+                            <option value="{{ a_choice.id }}">{{ a_choice.var.name }}</option>
                         {% endfor %}
                     </select>
                     <span class="connector">の出力値は</span>
                     <select name="bemodel_answers[]" class="select-box">
                         {% for a_choice in a_choices %}
-                            <option value="{{ a_choice.id }}">{{ a_choice.name }}</option>
+                            <option value="{{ a_choice.id }}">{{ a_choice.var.name }}</option>
                         {% endfor %}
                     </select>
-                    <span class="connector">の入力値</span>
                     <select name="bemodel_answers[]" class="select-box">
                         {% for b_choice in b_choices %}
                             <option value="{{ b_choice.id }}">{{ b_choice.name }}</option>
@@ -37,10 +36,11 @@
         <button type="submit" id="submit-button">送信</button>
     </form>
     <div class="task-details">
+        {% if show_previous_answers %}
         <div class="answer-summary">
             <h3>前回の回答</h3>
             {% for var1_name, var2_name, relation in bemodel_answers %}
-                <p>{{ var1_name }}の出力値は{{ var2_name }}の入力値と{{ relation }}</p>
+                <p>{{ var1_name }}の出力値は{{ var2_name }}{{ relation }}</p>
             {% endfor %}
         </div>
         <table class="behavior-table">
@@ -61,19 +61,18 @@
                 {% endfor %}
             </tbody>
         </table>
-    </div>
-    
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">
+                    {{ message }}
+                </div><br>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endif %}
+    </div>    
 </div>
-{% if messages %}
-    <script>
-        const messages = [];
-        {% for message in messages %}
-            messages.push("{{ message }}");
-        {% endfor %}
-        alert(messages.join("\n"));
-    </script>
-{% endif %}
-
 
 
 <script>
@@ -89,16 +88,15 @@
                 <div class="card-content">
                     <select name="bemodel_answers[]" class="select-box">
                         {% for a_choice in a_choices %}
-                            <option value="{{ a_choice.id }}">{{ a_choice.name }}</option>
+                            <option value="{{ a_choice.id }}">{{ a_choice.var.name }}</option>
                         {% endfor %}
                     </select>
                     <span class="connector">の出力値は</span>
                     <select name="bemodel_answers[]" class="select-box">
                         {% for a_choice in a_choices %}
-                            <option value="{{ a_choice.id }}">{{ a_choice.name }}</option>
+                            <option value="{{ a_choice.id }}">{{ a_choice.var.name  }}</option>
                         {% endfor %}
                     </select>
-                    <span class="connector">の入力値</span>
                     <select name="bemodel_answers[]" class="select-box">
                         {% for b_choice in b_choices %}
                             <option value="{{ b_choice.id }}">{{ b_choice.name }}</option>

@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 {% block contents %}
 <div class= "title">
-    <h2>「{{ current_subfunction.name }}」の構造を選択してください</h2>
-    補足：{{ current_subfunction.hosoku }}
+    <h2>「{{ current_subfunction.name }}」のソースコードを構築してください</h2>
+    <div class="subtitle">補足：<br>{{ current_subfunction.hosoku }}</div>
 </div>
 <div class="quiz-area">
     <div class="answer-area">
@@ -16,7 +16,7 @@
         <div class="behavior-model">
             <h3>振舞いモデル</h3>
             {% for bemodel in bemodel_list %}
-            <p>{{ bemodel.0 }}の出力値は{{ bemodel.1 }}の入力値と{{ bemodel.2 }}</p>
+            <p>{{ bemodel.0 }}の出力値は{{ bemodel.1 }}{{ bemodel.2 }}</p>
             {% endfor %}
         </div>
         <div id="card-container">

@@ -6,12 +6,12 @@ from .models import Task, SubFunction, Answer_bemodel, Answer_code, BehaviorMode
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.messages import get_messages
-from django.http import HttpResponseRedirect
+from django.utils.safestring import mark_safe
 
 def home(request):
-    tasks = Task.objects.all()
+    tasks = Task.objects.all
     context = {
-        'tasks': tasks,
+        'tasks': tasks ,
     }
     return render(request, 'tasks/home.html',context)
 
@@ -19,9 +19,11 @@ def organize(request, task_id):
     request.session.clear()
     # タスクの取得
     task = get_object_or_404(Task, id=task_id)
-    sub_functions = task.subfunctions.filter(parent=None)
+    sub_functions = task.subfunctions.filter(parent=None).order_by('id')
+    print(sub_functions)
     # ルート（親なし）のサブ機能を取得して構造を作成
     correct_structure = get_correct_structure(task)
+    print(correct_structure)
     # JSON形式で正解構造をテンプレートに渡す
     context = {
         'task': task,
@@ -48,15 +50,14 @@ def build_structure(subfunction):
     }
 
 def bemodel(request, task_id):
-    storage = get_messages(request)
-    storage.used = True  # メッセージをクリア
     task = get_object_or_404(Task, id=task_id)
-    # 振る舞いモデル選択肢
-    a_choices = BehaviorModel_A.objects.filter(task=task)
-    b_choices = BehaviorModel_B.objects.filter(task=task)
-    a_choices_dict = {a_choice.id: a_choice.name for a_choice in a_choices}
-    b_choices_dict = {b_choice.id: b_choice.name for b_choice in b_choices}
-
+    if not request.session.get('visited_before', False):
+        request.session['visited_before'] = True
+        # 初回アクセス時は何も表示しない設定を行う
+        show_previous_answers = False
+    else:
+        # 2回目以降のアクセス
+        show_previous_answers = True
     # セッションから進行状況を取得
     remaining_tasks = request.session.get('remaining_tasks', None)
     if remaining_tasks is None:
@@ -71,25 +72,23 @@ def bemodel(request, task_id):
     # 現在のタスクを取得
     current_subfunction_id = remaining_tasks[0]
     current_subfunction = get_object_or_404(SubFunction, id=current_subfunction_id)
+
+    # 振る舞いモデル選択肢
+    a_choices = SubFunctionVarValue.objects.filter(subfunction=current_subfunction)
+    b_choices = BehaviorModel_B.objects.filter(task=task)
+    a_choices_dict = {choice.id: choice.var.name for choice in a_choices}
+    b_choices_dict = {b_choice.id: b_choice.name for b_choice in b_choices}
     
-    subfunction_vars = SubFunctionVarValue.objects.filter(subfunction=current_subfunction)
-    inputs = {var.var.name: var.value for var in subfunction_vars}  # var.nameをキーにしてinputsを作成
-    outputs = {key: 0 for key in inputs}
+    inputs = {var.var.name: var.value for var in a_choices}  # var.nameをキーにしてinputsを作成
+    outputs = {key: key+"の出力値" for key in inputs} # 初期の入力値をコピー  # 初期値は全て0に設定
     # 初回アクセス時の回答がセッションに保存されているか確認
     bemodel_answers = None
-    error_flag = False
-    error_message = ""
-    if request.method == 'POST':
-        storage = get_messages(request)
-        storage.used = True 
+    if request.method == 'POST':        
         # ユーザーの回答を取得し、タプルとしてまとめる
         user_answers = request.POST.getlist('bemodel_answers[]')  # ユーザーの回答（リスト）
         user_answer_tuples = [(int(user_answers[i]), int(user_answers[i+1]), int(user_answers[i+2])) 
                       for i in range(0, len(user_answers), 3)]
-               # a_choices と b_choices を辞書に変換し、id → name にアクセスできるようにする
-        a_choices_dict = {a_choice.id: a_choice.name for a_choice in a_choices}
-        b_choices_dict = {b_choice.id: b_choice.name for b_choice in b_choices}
-
+        print(user_answer_tuples )
         # ユーザーの回答（id）からnameに変換
         bemodel_answers = []
         for i in range(0, len(user_answers), 3):
@@ -101,38 +100,32 @@ def bemodel(request, task_id):
             var1_name = a_choices_dict.get(var1_id, None)  # a_choices から変数名を取得
             var2_name = a_choices_dict.get(var2_id, None)  # b_choices から変数名を取得
             relation = b_choices_dict.get(relation_id, None)  # b_choices から変数名を取得
-             # サブ関数の変数チェック
-            if var1_name not in inputs or var2_name not in inputs:
-                error_flag = True
-                error_message = "選択された変数が許可されていません。"
-                break
+
             # タプルに変換
             bemodel_answers.append((var1_name, var2_name ,relation))
-        if error_flag:
-            messages.error(request, error_message)
-            return redirect(request.path)  # 現在のページを再読み込み
+
         # 計算を実行
         outputs = calculate_outputs(bemodel_answers, inputs)
         # 正解の回答を取得し、タプルとしてまとめる
         correct_answers = Answer_bemodel.objects.filter(sub_function=current_subfunction).values_list('behavior_model_a_1', 'behavior_model_a_2','behavior_model_b')
         correct_answer_tuples = [tuple(correct_answer) for correct_answer in correct_answers]
-
         if set(user_answer_tuples) == set(correct_answer_tuples):
+            request.session['visited_before'] = False
             return redirect(reverse('tasks:quiz', args=[task_id]))  # 次のクイズに進む
 
         else:
+            storage = messages.get_messages(request)
+            list(storage)
             # 不正解の場合のフィードバック
             extra = set(user_answer_tuples) - set(correct_answer_tuples)
             missing = set(correct_answer_tuples) - set(user_answer_tuples)
-            if extra or missing:
-                feedback = []
-                if extra:
-                    feedback.append(f"余分な振る舞いモデルがあります")
-                if missing:
-                    feedback.append(f"足りない振る舞いモデルがあります")
-                messages.error(request, "不正解です。" + " ".join(feedback))
-            else:
-                messages.error(request, "不正解です。もう一度試してください。")
+            feedback = []
+            if extra:
+                feedback.append(f"余分な振る舞いモデルがあります．<br>")
+            if missing:
+                feedback.append(f"足りない振る舞いモデルがあります．<br>")
+            messages.error(request, mark_safe("不正解です．<br>" + "".join(feedback)))
+    
     context = {
         'task': task,
         'current_subfunction': current_subfunction,
@@ -141,6 +134,7 @@ def bemodel(request, task_id):
         'inputs': inputs,   # SubFunctionVarValueから取得した入力値
         'outputs': outputs, # 計算された出力
         'bemodel_answers': bemodel_answers,
+        'show_previous_answers': show_previous_answers,
     }
     return render(request, 'tasks/bemodel.html', context)
 
@@ -156,7 +150,7 @@ def next_bemodel(request, task_id):
         return redirect(reverse('tasks:bemodel', args=[task_id]))
 
     # 全て完了した場合は終了画面へ
-    return redirect(reverse('tasks:finalbe', args=[task_id]))
+    return redirect(reverse('tasks:finalquiz', args=[task_id]))
 
 
 def quiz(request, task_id):
@@ -173,13 +167,14 @@ def quiz(request, task_id):
     bemodel_list =[]
     for item in bemodel:
         # 各フィールドの値をリストに格納
-        bemodel_list.append([item.behavior_model_a_1.name, item.behavior_model_a_2.name, item.behavior_model_b.name])    
+        bemodel_list.append([item.behavior_model_a_1.var.name, item.behavior_model_a_2.var.name, item.behavior_model_b.name])    
     cards = list(Card.objects.filter(task=task))
     # カードリストをシャッフル
     random.shuffle(cards)
     # 正解のデータ（解答順）を取得
     correct_answer = Answer_code.objects.get(sub_function=current_subfunction)
     correct_answer_list = correct_answer.get_correct_answer_list()
+    print(correct_answer_list)
     # フォームが送信されると次のページに遷移
     if request.method == "POST":
         return redirect(reverse('tasks:next_bemodel', args=[task.id]))
@@ -218,32 +213,29 @@ def get_subfunction_order(task_id):
     return sorted_tasks
 
 def finalbe(request, task_id):
-    storage = get_messages(request)
-    storage.used = True  # メッセージをクリア
     task = get_object_or_404(Task, id=task_id)
+    if not request.session.get('visited_before', False):
+        request.session['visited_before'] = True
+        # 初回アクセス時は何も表示しない設定を行う
+        show_previous_answers = False
+    else:
+        # 2回目以降のアクセス
+        show_previous_answers = True
     # 振る舞いモデル選択肢
-    a_choices = BehaviorModel_A.objects.filter(task=task)
+    a_choices =  TaskVarValue.objects.filter(task=task)
     b_choices = BehaviorModel_B.objects.filter(task=task)
-    a_choices_dict = {a_choice.id: a_choice.name for a_choice in a_choices}
+    a_choices_dict = {choice.id: choice.var.name for choice in a_choices}
     b_choices_dict = {b_choice.id: b_choice.name for b_choice in b_choices}
     
-    task_vars = TaskVarValue.objects.filter(task=task)
-    inputs = {var.var.name: var.value for var in task_vars}  # var.nameをキーにしてinputsを作成
-    outputs = {key: 0 for key in inputs}
+    inputs = {var.var.name: var.value for var in a_choices}  # var.nameをキーにしてinputsを作成
+    outputs = {key: key+"の出力値" for key in inputs} # 初期の入力値をコピー  # 初期値は全て0に設定
     # 初回アクセス時の回答がセッションに保存されているか確認
     bemodel_answers = None
-    error_flag = False
-    error_message = ""
     if request.method == 'POST':
-        storage = get_messages(request)
-        storage.used = True 
         # ユーザーの回答を取得し、タプルとしてまとめる
         user_answers = request.POST.getlist('bemodel_answers[]')  # ユーザーの回答（リスト）
         user_answer_tuples = [(int(user_answers[i]), int(user_answers[i+1]), int(user_answers[i+2])) 
                       for i in range(0, len(user_answers), 3)]
-               # a_choices と b_choices を辞書に変換し、id → name にアクセスできるようにする
-        a_choices_dict = {a_choice.id: a_choice.name for a_choice in a_choices}
-        b_choices_dict = {b_choice.id: b_choice.name for b_choice in b_choices}
 
         # ユーザーの回答（id）からnameに変換
         bemodel_answers = []
@@ -256,16 +248,9 @@ def finalbe(request, task_id):
             var1_name = a_choices_dict.get(var1_id, None)  # a_choices から変数名を取得
             var2_name = a_choices_dict.get(var2_id, None)  # b_choices から変数名を取得
             relation = b_choices_dict.get(relation_id, None)  # b_choices から変数名を取得
-             # サブ関数の変数チェック
-            if var1_name not in inputs or var2_name not in inputs:
-                error_flag = True
-                error_message = "選択された変数が許可されていません。"
-                break
+
             # タプルに変換
             bemodel_answers.append((var1_name, var2_name ,relation))
-        if error_flag:
-            messages.error(request, error_message)
-            return redirect(request.path)  # 現在のページを再読み込み
         # 計算を実行
         outputs = calculate_outputs(bemodel_answers, inputs)
         # 正解の回答を取得し、タプルとしてまとめる
@@ -276,18 +261,18 @@ def finalbe(request, task_id):
             return redirect(reverse('tasks:finalquiz', args=[task_id]))  # 次のクイズに進む
 
         else:
+            storage = messages.get_messages(request)
+            list(storage)
             # 不正解の場合のフィードバック
             extra = set(user_answer_tuples) - set(correct_answer_tuples)
             missing = set(correct_answer_tuples) - set(user_answer_tuples)
-            if extra or missing:
-                feedback = []
-                if extra:
-                    feedback.append(f"余分な振る舞いモデルがあります")
-                if missing:
-                    feedback.append(f"足りない振る舞いモデルがあります")
-                messages.error(request, "不正解です。" + " ".join(feedback))
-            else:
-                messages.error(request, "不正解です。もう一度試してください。")
+            feedback = []
+            if extra:
+                feedback.append(f"余分な振る舞いモデルがあります．<br>")
+            if missing:
+                feedback.append(f"足りない振る舞いモデルがあります．<br>")
+            messages.error(request, mark_safe("不正解です．<br>" + "".join(feedback)))
+
     context = {
         'task': task,
         'a_choices': a_choices,
@@ -295,11 +280,14 @@ def finalbe(request, task_id):
         'inputs': inputs,   # SubFunctionVarValueから取得した入力値
         'outputs': outputs, # 計算された出力
         'bemodel_answers': bemodel_answers,
+        'show_previous_answers': show_previous_answers,
+
     }
     return render(request, 'tasks/finalbe.html', context)
 
 def finalquiz(request, task_id):
     task = get_object_or_404(Task, id=task_id)
+    next_task = Task.objects.filter(id__gt=task_id).order_by('id').first()
 
     # クイズのカードデータを取得
     cards = list(Card.objects.filter(task=task))  # カードを取得
@@ -311,10 +299,13 @@ def finalquiz(request, task_id):
     bemodel_list =[]
     for item in bemodel:
         # 各フィールドの値をリストに格納
-        bemodel_list.append([item.behavior_model_a_1.name, item.behavior_model_a_2.name, item.behavior_model_b.name])    
+        bemodel_list.append([item.behavior_model_a_1.var.name, item.behavior_model_a_2.var.name, item.behavior_model_b.name])    
     # フォームが送信されると次のページに遷移
     if request.method == "POST":
-        return redirect('tasks:home')
+        if next_task:  # 次のテストがある場合はそのテストへ遷移
+            return redirect('tasks:finalquiz', test_id=next_task.id)
+        else:  # 次のテストがない場合はホームページへ遷移
+            return redirect('tasks:home')
 
     context = {
         'task': task,
@@ -325,16 +316,23 @@ def finalquiz(request, task_id):
     return render(request, 'tasks/finalquiz.html', context)
 
 def calculate_outputs(bemodel_answers, inputs):
-    outputs = {key: 0 for key in inputs} # 初期の入力値をコピー  # 初期値は全て0に設定
-    for i in range(len(bemodel_answers)):  # len(bemodel_answers)回処理
-        var1, var2, relation = bemodel_answers[i]
+    outputs = {key: key+"の出力値" for key in inputs} # 初期の入力値をコピー  # 初期値は全て0に設定
+    for i in range(len(bemodel_answers)):
+        for i in range(len(bemodel_answers)):  # len(bemodel_answers)回処理
+            var1, var2, relation = bemodel_answers[i]
 
-        if relation == "と等しい":
-            outputs[var1] = inputs[var2]
-        elif relation == "より大きい":
-            outputs[var1] = max(outputs[var1], outputs[var2])
-        elif relation == "より小さい":
-            outputs[var1] = min(outputs[var1], outputs[var2])
+            if relation == "の入力値と等しい":
+                outputs[var1] = inputs[var2]
+            elif relation == "の出力値と等しい":
+                outputs[var1] = outputs[var2]
+            elif relation == "の出力値以上の値になる":
+                outputs[var1] = str(outputs[var2]) + "以上"
+            elif relation == "の入力値以上の値になる":
+                outputs[var1] = max(inputs[var1],inputs[var2])
+            elif relation == "の出力値以下の値になる":
+                outputs[var1] = str(outputs[var2]) + "以下"
+            elif relation == "の入力値以下の値になる":
+                outputs[var1] = min(inputs[var1],inputs[var2])
 
     return outputs
 
@@ -416,7 +414,7 @@ def final_name(request):
 
 def learning_view(request, task_id):
     task = get_object_or_404(Task, id=task_id)
-
+    next_task = Task.objects.filter(id__gt=task_id).order_by('id').first()
     # クイズのカードデータを取得
     cards = list(Card.objects.filter(task=task))  # カードを取得
     random.shuffle(cards)
@@ -425,7 +423,10 @@ def learning_view(request, task_id):
     correct_answer_list = correct_answer.get_correct_answer_list()
     # フォームが送信されると次のページに遷移
     if request.method == "POST":
-        return redirect('tasks:home')
+        if next_task:  # 次のテストがある場合はそのテストへ遷移
+            return redirect('tasks:learning', test_id=next_task.id)
+        else:  # 次のテストがない場合はホームページへ遷移
+            return redirect('tasks:home')
 
     context = {
         'task': task,

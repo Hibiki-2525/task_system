@@ -1,8 +1,31 @@
-.title{
-    margin: 70px 30px 30px;
-    padding: 10px;
+
+.title {
+    margin: 75px 30px 20px;
     border: 2px solid #ccc;
-    min-height: 50px;
+    text-align: left;
+    padding: 10px 0 10px;
+}
+
+.title h2 {
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 10px;
+}
+.subtitle {
+    background-color: #a2fbdf; /* 補足ブロックの背景色 */
+    padding: 5px 15px; /* 内側の余白 */
+    border-radius: 8px; /* 角を丸くする */
+    font-size: 1rem; /* フォントサイズ */
+    color: #555; /* テキストの色 */
+    max-width: 600px; /* 最大幅を設定 */
+    margin: 0 10px 0; /* 中央揃え */
+}
+
+.message.error {
+    margin-top: 10px;
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
 }
 /*分解*/
 .construction{
@@ -143,7 +166,7 @@
 
 /*振る舞いモデル*/
 .bemodel-area {
-    margin: 20px 50px 30px;
+    margin: 10px 50px 30px;
     padding: 0px;
     display: flex;
     justify-content: space-between;
@@ -241,11 +264,10 @@
     background-color: #fcdcdc; /* 薄い赤色の背景 */
 }
 .behavior-model {
-    margin: 10px 0px 30px;
+    margin: 10px 0px 20px;
     width: 550px; /* 横幅の固定サイズ */
-    height: 100px; /* 高さの固定サイズ */
     border: 1px solid #ccc; /* 枠線を付ける */
-    padding: 10px;
+    padding: 5px;
     background-color: #c5f3f8;     /* 背景色を白に設定 */
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);  /* 軽い影をつけて浮き上がる感じに */
     border-radius: 10px;        /* 角を丸くする */

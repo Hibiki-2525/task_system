@@ -2,7 +2,13 @@
 {% block contents %}
 {% load recursivetags%}
 {% load random_tags%}
-<div class= "title"><h2>「{{ task.name }}」をサブ機能に分解してください</h2></div>
+<div class= "title">
+    <h2>「{{ task.name }}」をサブゴール階層に分解してください</h2>
+    <div class="subtitle">
+        補足：正解箇所が緑になります<br>
+        上層のサブゴールが正しくないと、その下層も正解として評価されません。<br>
+    </div>
+</div>
 <div class="quiz-area">
 <div class= "answer-area" >
     <ul class="construction">
